@@ -175,7 +175,12 @@ public class Product {
 
     public void show(Context c) {
         Stores stores = Stores.getInstance();
-        String DB_URL= "https://onlineshopping-2857f.firebaseio.com/Stores/" + stores.getCurrent().getName() + "/Products/" + this.id ;
+        String DB_URL;
+        if (stores.isCurrentFlag()) {
+            DB_URL= "https://onlineshopping-2857f.firebaseio.com/Stores/" + stores.getCurrent().getName() + "/Products/" + this.id ;
+        } else {
+            DB_URL = "https://onlineshopping-2857f.firebaseio.com/Stores/" + getShop().getName() + "/Products/" + this.id ;
+        }
         FirebaseClient firebaseClient = new FirebaseClient(c, DB_URL);
         firebaseClient.getDetails();
     }
