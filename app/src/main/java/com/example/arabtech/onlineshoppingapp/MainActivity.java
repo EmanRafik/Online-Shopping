@@ -10,24 +10,31 @@ import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
+import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.firebase.client.Firebase;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+
+import java.util.ArrayList;
 
 import static util.Constants.ERROR_DIALOG_REQUEST;
 import static util.Constants.PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION;
@@ -35,6 +42,7 @@ import static util.Constants.PERMISSIONS_REQUEST_ENABLE_GPS;
 
 public class MainActivity extends AppCompatActivity {
     private BottomNavigationView mainNav = null;
+    private NavigationView shoppingNav=null;
     private FrameLayout mainFrame = null;
     private Store store;
     private Profile profile;
@@ -48,12 +56,13 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         LayoutInflater factory = LayoutInflater.from(this);
-        View myView = factory.inflate(R.layout.fragment_store, null);
+        final View myView = factory.inflate(R.layout.fragment_store, null);
         store = new Store(/*myView*/);
         profile = new Profile();
         notifications = new Notifications();
         mainFrame = (FrameLayout) findViewById(R.id.mainFrame);
         mainNav = (BottomNavigationView) findViewById(R.id.mainNav);
+        shoppingNav=(NavigationView) findViewById(R.id.shoppingNav);
         drawerLayout=(DrawerLayout) findViewById(R.id.drawerLayout);
         drawerToggle=new ActionBarDrawerToggle(this,drawerLayout,R.string.open,R.string.close);
         drawerLayout.addDrawerListener(drawerToggle);
@@ -88,6 +97,73 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+        shoppingNav.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(MenuItem item) {
+                Stores stores = Stores.getInstance();
+                Filters filters;
+                if (stores.isCurrentFlag()) {
+                    filters = new Filters(stores.getCurrent().getProducts());
+                    stores.getCurrent().setFilters(true);
+                } else {
+                    filters = new Filters(stores.getAllProducts());
+                    stores.setFilters(true);
+                }
+                switch(item.getItemId()) {
+                    case R.id.dresses:
+                        filters.categoryFilter("Dress");
+                        Toast.makeText(getApplicationContext(),"Dresses",Toast.LENGTH_SHORT).show();
+                        break;
+                        //return true;
+                    case R.id.jeans:
+                        filters.categoryFilter("Jeans");
+                        Toast.makeText(getApplicationContext(),"Jeans",Toast.LENGTH_SHORT).show();
+                        break;
+                    case R.id.shoes:
+                        filters.categoryFilter("Shoes");
+                        Toast.makeText(getApplicationContext(),"Shoes",Toast.LENGTH_SHORT).show();
+                        break;
+                        //return true;
+                    case R.id.shirts:
+                        filters.categoryFilter("Shirt");
+                        Toast.makeText(getApplicationContext(),"Shirts",Toast.LENGTH_SHORT).show();
+                        break;
+                        //return true;
+                    case R.id.jackets:
+                        filters.categoryFilter("Jacket");
+                        Toast.makeText(getApplicationContext(),"Jackets",Toast.LENGTH_SHORT).show();
+                        break;
+                        //return true;
+                    case R.id.shorts:
+                        filters.categoryFilter("Short");
+                        Toast.makeText(getApplicationContext(),"Shorts",Toast.LENGTH_SHORT).show();
+                        break;
+                        //return true;
+                    case R.id.sweatshirts:
+                        filters.categoryFilter("SweatShirt");
+                        Toast.makeText(getApplicationContext(),"Sweatshirts",Toast.LENGTH_SHORT).show();
+                        break;
+                        //return true;
+                }
+
+                ListView listView = myView.findViewById(R.id.listView);
+                if (stores.isCurrentFlag()) {
+                    stores.getCurrent().setFiltered(filters.getFiltered());
+
+                    //stores.getCurrent().updateProducts(getApplicationContext(), listView);
+                } else {
+                    stores.setFiltered(filters.getFiltered());
+                    Toast.makeText(getApplicationContext(), Integer.toString(stores.getFiltered().size()), Toast.LENGTH_LONG).show();
+
+                    //stores.updateProducts(getApplicationContext(), listView);
+                }
+                setFragment(new Store());
+                DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawerLayout);
+                drawer.closeDrawer(GravityCompat.START);
+                return true;
+            }
+        });
+
     }
     //map permissions
     private boolean checkMapServices(){
@@ -199,6 +275,11 @@ public class MainActivity extends AppCompatActivity {
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.mainFrame, fragment);
         fragmentTransaction.commit();
+    }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.shopping_list, menu);
+        return true;
     }
 
     @Override

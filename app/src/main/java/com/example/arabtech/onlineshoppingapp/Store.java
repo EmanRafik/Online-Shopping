@@ -68,15 +68,35 @@ public class Store extends Fragment {
         ViewManager viewManager = ViewManager.getInstance();
         viewManager.setStore(this);
 
+        FirebaseManager firebaseManager = FirebaseManager.getInstance();
+        for(int i = 0; i < firebaseManager.getListener().size(); i++) {
+            firebaseManager.getFirebase().get(i).removeEventListener(firebaseManager.getListener().get(i));
+        }
+        firebaseManager.getFirebase().clear();
+        firebaseManager.getListener().clear();
+
         if (stores.isCurrentFlag()) {
-            DB_URL = "https://onlineshopping-2857f.firebaseio.com/Stores/" + stores.getCurrent().getName() + "/Products";
-            firebaseClient= new FirebaseClient(getContext(), DB_URL,listView);
-            firebaseClient.productsUpdate();
+           // stores.getCurrent().setSelected(null);
+
+            if (stores.getCurrent().isFilters()) {
+                stores.getCurrent().updateProducts(getContext(), listView);
+            } else {
+                stores.getCurrent().getProducts().clear();
+                DB_URL = "https://onlineshopping-2857f.firebaseio.com/Stores/" + stores.getCurrent().getName() + "/Products";
+                firebaseClient= new FirebaseClient(getContext(), DB_URL,listView);
+                firebaseClient.productsUpdate();
+            }
         } else {
-            stores.getAllProducts().clear();
-            DB_URL = "https://onlineshopping-2857f.firebaseio.com/Stores";
-            firebaseClient= new FirebaseClient(getContext(), DB_URL,listView);
-            firebaseClient.allProducts();
+
+            stores.setSelected(null);
+            if (stores.isFilters()) {
+                stores.updateProducts(getContext(), listView);
+            } else {
+                stores.getAllProducts().clear();
+                DB_URL = "https://onlineshopping-2857f.firebaseio.com/Stores";
+                firebaseClient = new FirebaseClient(getContext(), DB_URL, listView);
+                firebaseClient.allProducts();
+            }
         }
         return view;
     }

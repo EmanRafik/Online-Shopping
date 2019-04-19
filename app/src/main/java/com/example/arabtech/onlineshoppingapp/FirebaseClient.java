@@ -24,6 +24,7 @@ import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -37,6 +38,7 @@ public class FirebaseClient  {
     private ListView listView;
     private Firebase firebase;
     private Product product;
+    private Shop shop=null;
 
 
     public  FirebaseClient(Context c, String DB_URL, ListView listView)
@@ -44,6 +46,15 @@ public class FirebaseClient  {
         this.c= c;
         this.DB_URL= DB_URL;
         this.listView= listView;
+        Firebase.setAndroidContext(c);
+        firebase=new Firebase(DB_URL);
+    }
+    public  FirebaseClient(Context c, String DB_URL, ListView listView,Shop shop)
+    {
+        this.c= c;
+        this.DB_URL= DB_URL;
+        this.listView= listView;
+        this.shop=shop;
         Firebase.setAndroidContext(c);
         firebase=new Firebase(DB_URL);
     }
@@ -130,12 +141,34 @@ public class FirebaseClient  {
         }
     }
 
-    private void uploadImage(int id, Uri uri) {
+    public void uploadImage(int id, Uri uri) {
         StorageReference storage = FirebaseStorage.getInstance().getReference();
         final StorageReference path = storage.child(uri.getLastPathSegment());
 
         ViewManager viewManager = ViewManager.getInstance();
         switch (id) {
+            case 0:
+                if (checkPermissionREAD_EXTERNAL_STORAGE(viewManager.getActivity())) {
+                    path.putFile(uri).continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+                        @Override
+                        public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                            if (!task.isSuccessful()) {
+                                throw task.getException();
+                            }
+                            return path.getDownloadUrl();
+                        }
+                    }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Uri> task) {
+                            if (task.isSuccessful()) {
+                                Uri downloadUri = task.getResult();
+                                firebase.child("Details").child("logo").setValue(downloadUri.toString());
+                            }
+                        }
+                    });
+
+                }
+                break;
             case 1:
                 if (checkPermissionREAD_EXTERNAL_STORAGE(viewManager.getActivity())) {
                     path.putFile(product.getUri1()).continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
@@ -288,8 +321,16 @@ public class FirebaseClient  {
                 product.setDescription(dataSnapshot.getValue(Product.class).getDescription());
                 product.setTime(dataSnapshot.getValue(Product.class).getTime());
                 product.setImg1(dataSnapshot.getValue(Product.class).getImg1());
-                stores.getCurrent().getProducts().add(product);
-                stores.getCurrent().updateProducts(c, listView);
+                product.setCategory(dataSnapshot.getValue(Product.class).getCategory());
+                product.setPrice(dataSnapshot.getValue(Product.class).getPrice());
+                if(shop!=null){
+                    shop.getProducts().add(product);
+                    shop.updateProducts(c, listView);
+                } else{
+                    stores.getCurrent().getProducts().add(product);
+                    stores.getCurrent().updateProducts(c, listView);
+                }
+
             }
 
             @Override
@@ -315,32 +356,57 @@ public class FirebaseClient  {
     }
 
     public void getDetails() {
+        /*firebase.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot d : dataSnapshot.getChildren()) {
+                    if (d.getKey().equals("size")) {
+                        product.setSize(d.getValue(String.class));
+                    } else if (d.getKey().equals("color")) {
+                        product.setColor(d.getValue(String.class));
+                    } else if (d.getKey().equals("price")) {
+                        product.setPrice(d.getValue(String.class));
+                    } else if (d.getKey().equals("offers")) {
+                        product.setOffers(d.getValue(String.class));
+                    } else if (d.getKey().equals("notes")) {
+                        product.setNotes(d.getValue(String.class));
+                    } else if (d.getKey().equals("img2")) {
+                        product.setImg2(d.getValue(String.class));
+                    } else if (d.getKey().equals("img3")) {
+                        product.setImg3(d.getValue(String.class));
+                    } else if (d.getKey().equals("img4")) {
+                        product.setImg4(d.getValue(String.class));
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
+
+            }
+        });*/
         firebase.addChildEventListener(new ChildEventListener() {
-            Stores stores = Stores.getInstance();
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                Product p;
-                if (stores.isCurrentFlag()) {
-                    p = stores.getCurrent().getSelected();
-                } else {
-                    p = stores.getSelected();
-                }
+                FirebaseManager firebaseManager = FirebaseManager.getInstance();
+                firebaseManager.getFirebase().add(firebase);
+                firebaseManager.getListener().add(this);
                 if (dataSnapshot.getKey().equals("size")) {
-                    p.setSize(dataSnapshot.getValue(String.class));
+                    product.setSize(dataSnapshot.getValue(String.class));
                 } else if (dataSnapshot.getKey().equals("color")) {
-                    p.setColor(dataSnapshot.getValue(String.class));
+                    product.setColor(dataSnapshot.getValue(String.class));
                 } else if (dataSnapshot.getKey().equals("price")) {
-                    p.setPrice(dataSnapshot.getValue(String.class));
+                    product.setPrice(dataSnapshot.getValue(String.class));
                 } else if (dataSnapshot.getKey().equals("offers")) {
-                    p.setOffers(dataSnapshot.getValue(String.class));
+                    product.setOffers(dataSnapshot.getValue(String.class));
                 } else if (dataSnapshot.getKey().equals("notes")) {
-                    p.setNotes(dataSnapshot.getValue(String.class));
+                    product.setNotes(dataSnapshot.getValue(String.class));
                 } else if (dataSnapshot.getKey().equals("img2")) {
-                    p.setImg2(dataSnapshot.getValue(String.class));
+                    product.setImg2(dataSnapshot.getValue(String.class));
                 } else if (dataSnapshot.getKey().equals("img3")) {
-                    p.setImg3(dataSnapshot.getValue(String.class));
+                    product.setImg3(dataSnapshot.getValue(String.class));
                 } else if (dataSnapshot.getKey().equals("img4")) {
-                    p.setImg4(dataSnapshot.getValue(String.class));
+                    product.setImg4(dataSnapshot.getValue(String.class));
                 }
             }
 

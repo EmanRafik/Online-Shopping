@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 /**
@@ -35,13 +36,19 @@ public class ShowProduct extends Fragment {
         // Required empty public constructor
     }
 
+    public void setCurrent(Shop current) {
+        this.current = current;
+    }
+
+    public void setSelected(Product selected) {
+        this.selected = selected;
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_show_product, container, false);
-
         storeName = view.findViewById(R.id.storeName);
         description = view.findViewById(R.id.title);
         size = view.findViewById(R.id.size);
@@ -59,9 +66,10 @@ public class ShowProduct extends Fragment {
         if (stores.isCurrentFlag()) {
             current = stores.getCurrent();
             selected = current.getSelected();
+        } else {
+            current = stores.getSelected().getShop();
+            selected = stores.getSelected();
         }
-        current = stores.getSelected().getShop();
-        selected = stores.getSelected();
 
         storeName.setText(current.getName());
         if (current.getLogo().equals("noImage")) {
@@ -82,7 +90,7 @@ public class ShowProduct extends Fragment {
             PicassoClient.downloadImg(getContext(),selected.getImg1(),img1);
         }
 
-        if (selected.getImg2().equals("noImage")) {
+        /*if (selected.getImg2().equals("noImage")) {
             img2.setImageResource(R.drawable.no_image);
         } else {
             PicassoClient.downloadImg(getContext(),selected.getImg2(),img2);
@@ -98,7 +106,7 @@ public class ShowProduct extends Fragment {
             img4.setImageResource(R.drawable.no_image);
         } else {
             PicassoClient.downloadImg(getContext(),selected.getImg4(),img4);
-        }
+        }*/
 
         return view;
     }

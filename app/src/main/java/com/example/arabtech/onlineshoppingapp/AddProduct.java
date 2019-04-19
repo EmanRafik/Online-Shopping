@@ -32,6 +32,7 @@ import com.google.firebase.storage.UploadTask;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Calendar;
+import java.util.UUID;
 
 public class AddProduct extends AppCompatActivity {
 

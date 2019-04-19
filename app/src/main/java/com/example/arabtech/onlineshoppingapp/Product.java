@@ -2,6 +2,9 @@ package com.example.arabtech.onlineshoppingapp;
 
 import android.content.Context;
 import android.net.Uri;
+import android.widget.Toast;
+
+import java.util.UUID;
 
 public class Product {
 
@@ -166,7 +169,7 @@ public class Product {
     }
 
     public void add(Context c) {
-        String DB_URL= "https://onlineshopping-2857f.firebaseio.com/Stores/Rojada/Products";
+        String DB_URL= "https://onlineshopping-2857f.firebaseio.com/Stores/"+getShop().getName()+"/Products";
         FirebaseClient firebaseClient = new FirebaseClient(c, DB_URL, this);
         firebaseClient.addProduct();
        /* DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
@@ -181,7 +184,9 @@ public class Product {
         } else {
             DB_URL = "https://onlineshopping-2857f.firebaseio.com/Stores/" + getShop().getName() + "/Products/" + this.id ;
         }
-        FirebaseClient firebaseClient = new FirebaseClient(c, DB_URL);
+        FirebaseManager firebaseManager = FirebaseManager.getInstance();
+        FirebaseClient firebaseClient = new FirebaseClient(c, DB_URL, this);
+        firebaseManager.setFirebaseClient(firebaseClient);
         firebaseClient.getDetails();
     }
 

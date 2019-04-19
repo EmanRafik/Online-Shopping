@@ -4,6 +4,7 @@
     package="com.example.arabtech.onlineshoppingapp">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission
@@ -28,12 +29,13 @@
         android:theme="@style/AppTheme">
         <activity android:name=".MainActivity">
         </activity>
-        <activity android:name=".LogIn">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter></activity>
+        <activity android:name=".StartActivity">
+        <intent-filter>
+        <action android:name="android.intent.action.MAIN"/>
+        <category android:name="android.intent.category.LAUNCHER"/>
+    </intent-filter>
+    </activity>
+        <activity android:name=".LogIn" />
         <activity android:name=".Register" />
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
@@ -57,6 +59,7 @@
         <activity
             android:name=".MapsActivity"
             android:label="@string/title_activity_maps"></activity>
+        <activity android:name=".StoreView"/>
     </application>
 
 </manifest>

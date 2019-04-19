@@ -3,6 +3,7 @@ package com.example.arabtech.onlineshoppingapp;
 import android.content.Context;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -10,8 +11,10 @@ public class Stores {
     private static Stores instance = null;
     private ArrayList<String> names;
     private  ArrayList<Product> allProducts;
+    private ArrayList<Product> filtered;
     private Shop current;
     private boolean currentFlag;
+    private boolean filters;
     private Product selected;
 
     private Stores() {
@@ -35,6 +38,14 @@ public class Stores {
         this.allProducts = allProducts;
     }
 
+    public ArrayList<Product> getFiltered() {
+        return filtered;
+    }
+
+    public void setFiltered(ArrayList<Product> filtered) {
+        this.filtered = filtered;
+    }
+
     public boolean isCurrentFlag() {
         return currentFlag;
     }
@@ -43,8 +54,20 @@ public class Stores {
         this.currentFlag = currentFlag;
     }
 
+    public boolean isFilters() {
+        return filters;
+    }
+
+    public void setFilters(boolean filters) {
+        this.filters = filters;
+    }
+
     public Shop getCurrent() {
         return current;
+    }
+
+    public void setCurrent(Shop current) {
+        this.current = current;
     }
 
     public void setCurrent(String name) {
@@ -63,8 +86,25 @@ public class Stores {
         return selected;
     }
 
+    public void setSelected(Product selected) {
+        this.selected = selected;
+    }
+
     public void selectProduct(int index) {
-        selected = allProducts.get(index);
+        if (filters)  {
+            selected = filtered.get(index);
+        } else {
+            selected = allProducts.get(index);
+        }
+
+    }
+    public void deleteProduct(int index){
+        if (filters) {
+            selected = filtered.remove(index);
+        } else {
+            selected = allProducts.remove(index);
+        }
+
     }
 
     public void updateList(Context c, ListView list) {
@@ -74,7 +114,13 @@ public class Stores {
     }
 
     public void updateProducts(Context c, ListView list) {
-        CustomAdapter customAdapter = new CustomAdapter(c, this.allProducts);
+        CustomAdapter customAdapter;
+        if (filters) {
+            customAdapter = new CustomAdapter(c, this.filtered);
+        } else {
+            customAdapter = new CustomAdapter(c, this.allProducts);
+        }
         list.setAdapter(customAdapter);
     }
+
 }
